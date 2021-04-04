@@ -1,11 +1,17 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const router = express.Router();
+const multer = require('multer');
+const os =require('os');
+const SETTINGS = require('../../settings');
+const uploadAvatar = require('../modules/Multer/multer');
 
 const Answer = require('./Answer');
 
+
 function Router({ users }) {
     const answer = new Answer;
+
+    const upload = uploadAvatar;
     
     // регистрация
     router.post('/auth/registration', async (req, res) => {
@@ -18,30 +24,55 @@ function Router({ users }) {
     router.post('/auth/login', async (req, res) => {
         const data = req.body;
         const value = await users.login(data);
-        res.send(answer.good(value));
-    })
+        res.json(answer.good(value));
+    });
 
     // выход
     router.get('/auth/logout/:token', async (req, res) => {
         const data = req.params;
         const value = await users.logout(data);
-        res.send(answer.good(value));
+        res.json(answer.good(value));
     })
 
 
-    // получить данные по токену
+    // получить данные о пользователе по токену
     router.get('/users/getUserData/:token', async (req, res) => {
         const data = req.params;
         const value = await users.getUserData(data);
-        res.send(answer.good(value));
+        res.json(answer.good(value));
     });
 
-
-
-    router.post('/hello', (req, res) => {
-        const { name, surname } = req.body;
-        res.send(`Hello ${name} ${surname}`);
+    // обновить никнейм
+    router.post('/users/updateNickname', async (req, res) => {
+        const value = await users.updateUserNickname(req.body);
+        res.json(answer.good(value));
     })
+
+    // добавление аватара
+    router.post('/avatar/saveAvatar', upload, async (req, res) => {
+        const value = await users.saveAvatar({ avatar: req.file, ...req.body });
+        res.json(answer.good(value));
+    })  
+
+    // получить автар по токену
+    router.get('/avatar/getUserAvatar/:token', async (req, res) => {
+        const value = await users.getUserAvatar(req.params);
+        res.json(answer.good(value));
+    }) 
+
+    // обновить аватар
+    router.post('/avatar/updateAvatar', upload, async (req, res) => {
+        const value = await users.updateUserAvatar({ avatar: req.file, ...req.body });
+        res.json(answer.good(value));
+    }) 
+
+    // удалить аватар
+    router.get('/avatar/deleteAvatar/:token', async (req, res) => {
+        const value = await users.deleteUserAvatar(req.params);
+        res.json(answer.good(value));
+    })
+    
+
 
     router.all('/*', (req, res) => res.send(answer.bad(404)));
     return router;

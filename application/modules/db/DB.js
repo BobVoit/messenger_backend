@@ -12,7 +12,7 @@ class DB {
             })
         })();
 
-        // this.db = new sqlite3.Database('./application/modules/db/messanger.db');
+        // this.db = new sqlite3.Database('./application/modules/db/messanger.db'); 
     }
 
     // берёт данный пользователя по login
@@ -42,6 +42,7 @@ class DB {
         return result;
     }
 
+    // обновляет токен пользователя
     updateUserToken(id, token) {
         const result = this.db.run(
             'UPDATE users SET token=? WHERE id=?',
@@ -50,6 +51,7 @@ class DB {
         return result;
     }
 
+    // обновление статуса пользователя
     updateUserStatus(id, status) {
         const result = this.db.run(
             'UPDATE users SET status=? WHERE id=?',
@@ -58,10 +60,83 @@ class DB {
         return result;
     }
 
+    // удаление токена пользователя
     deleteUserToken(token) {
         return this.db.run(
             "UPDATE users SET token='' WHERE token=?",
             [token]
+        );
+    }
+
+    // берет все данные о пользователе по userId
+    getDataAboutUser(userId) {
+        return this.db.get(
+            'SELECT usersContent.aboutText FROM users INNER JOIN usersContent ON ? = usersContent.userId',
+            [userId]
+        );
+    }
+
+    // сохраняет аватар пользователя
+    saveAvatar(userId, fileName) {
+        return this.db.run(
+            'INSERT INTO avatars (filename, userId) VALUES (?, ?)',
+            [fileName, userId]
+        );
+    }
+
+    // возвращает аватар пользователя
+    getAvatar(userId) {
+        return this.db.get(
+            'SELECT fileName FROM avatars WHERE userId = ?',
+            [userId]
+        );
+    }
+    
+    // обновляет аватар пользователя
+    updateUserAvatar(userId, filename) {
+        return this.db.run(
+            'UPDATE avatars SET filename = ? WHERE userId = ?',
+            [filename, userId]
+        );
+    }
+
+    // удаляет аватар пользователя
+    deleteUserAvatar(userId) {
+        return this.db.run(
+            'DELETE FROM avatars WHERE userId = ?',
+            [userId]
+        );
+    }
+
+    // обновить никнейм
+    updateUserNickname(token, newNickname) {
+        return this.db.run(
+            'UPDATE users SET nickname = ? WHERE token = ?',
+            [newNickname, token]
+        );
+    }
+
+    // взять данные об пользователи из таблицы usersContent
+    selectDataAboutUser(userId) {
+        return this.db.get(
+            'SELECT * FROM usersContent WHERE userId = ?',
+            [userId]
+        );
+    }
+
+    // добавить текст о пользователе
+    addTextAboutUser(userId, aboutText) {
+        return this.db.run(
+            'INSERT INTO usersContent (userId, aboutText) VALUES (?, ?)',
+            [userId, aboutText]
+        );
+    }
+
+    // обновить текст о пользователе
+    updateTextAboutUser(userId, aboutText) {
+        return this.db.run(
+            'UPDATE users SET aboutText = ? WHERE userId = ?',
+            [aboutText, userId]
         );
     }
 }

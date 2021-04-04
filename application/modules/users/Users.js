@@ -1,7 +1,7 @@
 const Module = require('../Module');
 const md5 = require('md5');
 const Answer = require('../../routers/Answer');
-
+const fs = require('fs');
 
 
 class Users extends Module {
@@ -9,7 +9,14 @@ class Users extends Module {
         super(options);
 
         this.answer = new Answer();
-        
+    }
+
+    getPathToUploadImage(fileName) {
+        return `${this.HOST}/${this.UPLOADS.IMAGES}/${fileName}`;
+    }
+
+    getFullPathToUploadImage(fileName) {
+        return `${this.PATH_TO_DIR}/${this.UPLOADS.IMAGES}/${fileName}`;
     }
 
     // авторизация пользователя
@@ -52,7 +59,12 @@ class Users extends Module {
         const { token } = data;
         if (token) {
             const user = await this.db.getUserByToken(token);
-            return user;
+            if (user) {
+                const aboutText = await this.db.getDataAboutUser(user.id);
+                const avatar = await this.db.getAvatar(user.id);
+                console.log(avatar);
+                return { ...user, ...aboutText, avatar: avatar ? this.getPathToUploadImage(avatar.filename) : null };
+            }
         }
     }
 
@@ -71,19 +83,91 @@ class Users extends Module {
         }
     }
 
-
-    // set user status offline
-    async setOfflineUser(data, socket) {
-        const { token } = data;
+    // добавить аватар пользователю
+    async saveAvatar(data) {
+        const { token, avatar } = data;
         if (token) {
             const user = await this.db.getUserByToken(token);
             if (user) {
-                const result = await this.db.updateUserStatus(user.id, 'offline');
-                socket.emit('disconnect', 'offline');
+                const result = await this.db.saveAvatar(user.id, avatar.filename);
+                console.log(this.getPathToUploadImage(avatar.filename));
+                return this.getPathToUploadImage(avatar.filename);
             }
         }
     }
 
+    // получить пользовательский аватар
+    async getUserAvatar(data) {
+        const { token } = data;
+        if (token) {
+            const user = await this.db.getUserByToken(token);
+            if (user) {
+                const result = await this.db.getAvatar(user.id);
+                if (result) {
+                    const avatar = this.getPathToUploadImage(result.filename);
+                    return avatar;
+                }
+            }
+        }
+    }
+
+    // обновить аватар пользователя
+    async updateUserAvatar(data) {
+        const { token, avatar } = data;
+        console.log(token, avatar);
+        if (token) {
+            const user = await this.db.getUserByToken(token);
+            if (user) {
+                const prevAvatar = await this.db.getAvatar(user.id);
+                let result;
+                try {
+                    fs.unlinkSync(this.getFullPathToUploadImage(prevAvatar.filename));
+                    result = await this.db.updateUserAvatar(user.id, avatar.filename);
+                } catch (err) {
+                    console.error(err);
+                }
+                if (result) {
+                    return true;
+                }
+            }
+        }
+    }
+    // удалить аватар пользователя
+    async deleteUserAvatar(data) {
+        const { token } = data;
+        if (token) {
+            const user = await this.db.getUserByToken(token);
+            if (user) {
+                const avatar = await this.db.getAvatar(user.id);
+                let result;
+                try {
+                    fs.unlinkSync(this.getFullPathToUploadImage(avatar.filename));
+                    result = await this.db.deleteUserAvatar(user.id);
+                } catch (err) {
+                    console.error(err);
+                }
+                return result ? true : false;
+            }
+        }
+    }
+
+    // обновить никнейм
+    async updateUserNickname(data) {
+        const { nickname, token } = data;
+        if (nickname && token) {
+            const result = await this.db.updateUserNickname(token, nickname);
+            if (result) {
+                return true;
+            }
+        }
+    }
+
+    async setTextAboutUser(data) {
+        const { aboutText, token } = data;
+        if (token && aboutText) {
+            
+        }
+    }
 }
 
 module.exports = Users;

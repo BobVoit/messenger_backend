@@ -1,4 +1,5 @@
 class Answer {
+
     constructor() {
         this.ERROR = {
             404: 'page not found',
