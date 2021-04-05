@@ -62,6 +62,7 @@ function Router({ users }) {
 
     // обновить аватар
     router.post('/avatar/updateAvatar', upload, async (req, res) => {
+        console.log({ avatar: req.file, ...req.body });
         const value = await users.updateUserAvatar({ avatar: req.file, ...req.body });
         res.json(answer.good(value));
     }) 

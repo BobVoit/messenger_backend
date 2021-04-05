@@ -114,7 +114,6 @@ class Users extends Module {
     // обновить аватар пользователя
     async updateUserAvatar(data) {
         const { token, avatar } = data;
-        console.log(token, avatar);
         if (token) {
             const user = await this.db.getUserByToken(token);
             if (user) {
@@ -127,7 +126,7 @@ class Users extends Module {
                     console.error(err);
                 }
                 if (result) {
-                    return true;
+                    return this.getPathToUploadImage(avatar.filename);
                 }
             }
         }
@@ -156,8 +155,9 @@ class Users extends Module {
         const { nickname, token } = data;
         if (nickname && token) {
             const result = await this.db.updateUserNickname(token, nickname);
+            console.log(result);
             if (result) {
-                return true;
+                return nickname;
             }
         }
     }
@@ -165,7 +165,7 @@ class Users extends Module {
     async setTextAboutUser(data) {
         const { aboutText, token } = data;
         if (token && aboutText) {
-            
+            // const result = await this.db.
         }
     }
 }
