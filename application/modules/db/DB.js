@@ -68,14 +68,6 @@ class DB {
         );
     }
 
-    // берет все данные о пользователе по userId
-    getDataAboutUser(userId) {
-        return this.db.get(
-            'SELECT usersContent.aboutText FROM users INNER JOIN usersContent ON ? = usersContent.userId',
-            [userId]
-        );
-    }
-
     // сохраняет аватар пользователя
     saveAvatar(userId, fileName) {
         return this.db.run(
@@ -116,11 +108,11 @@ class DB {
         );
     }
 
-    // взять данные об пользователи из таблицы usersContent
-    selectDataAboutUser(userId) {
-        return this.db.get(
-            'SELECT * FROM usersContent WHERE userId = ?',
-            [userId]
+    // обновить текст о пользователе
+    updateTextAboutUser(userId, aboutText) {
+        return this.db.run(
+            'UPDATE users SET aboutText = ? WHERE userId = ?',
+            [aboutText, userId]
         );
     }
 
@@ -135,10 +127,19 @@ class DB {
     // обновить текст о пользователе
     updateTextAboutUser(userId, aboutText) {
         return this.db.run(
-            'UPDATE users SET aboutText = ? WHERE userId = ?',
+            'UPDATE usersContent SET aboutText = ? WHERE userId = ?',
             [aboutText, userId]
         );
     }
+
+    // возвращает объект с полем aboutText
+    getDataAboutUser(userId) {
+        return this.db.get(
+            'SELECT aboutText FROM usersContent WHERE userId = ?',
+            [userId]
+        );
+    }
+
 }
 
 module.exports = DB;

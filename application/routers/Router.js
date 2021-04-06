@@ -73,6 +73,17 @@ function Router({ users }) {
         res.json(answer.good(value));
     })
     
+    // устанавливает значение для текста о пользователе
+    router.post('/users/updateAboutText', async (req, res) => {
+        const value = await users.setTextAboutUser(req.body);
+        res.json(answer.good(value));
+    })
+
+    
+    router.get('/users/getAboutText/:token', async (req, res) => {
+        const value = await users.getUserAboutText(req.params);
+        res.json(answer.good(value));
+    })
 
 
     router.all('/*', (req, res) => res.send(answer.bad(404)));

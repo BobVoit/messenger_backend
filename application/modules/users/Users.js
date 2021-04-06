@@ -60,9 +60,8 @@ class Users extends Module {
         if (token) {
             const user = await this.db.getUserByToken(token);
             if (user) {
-                const aboutText = await this.db.getDataAboutUser(user.id);
                 const avatar = await this.db.getAvatar(user.id);
-                console.log(avatar);
+                const aboutText = await this.db.getDataAboutUser(user.id);
                 return { ...user, ...aboutText, avatar: avatar ? this.getPathToUploadImage(avatar.filename) : null };
             }
         }
@@ -131,6 +130,7 @@ class Users extends Module {
             }
         }
     }
+
     // удалить аватар пользователя
     async deleteUserAvatar(data) {
         const { token } = data;
@@ -162,10 +162,39 @@ class Users extends Module {
         }
     }
 
+    // добавление текста о пользователе
     async setTextAboutUser(data) {
         const { aboutText, token } = data;
-        if (token && aboutText) {
-            // const result = await this.db.
+        // console.log(typeof aboutText);
+        if (token && (data || data === "")) {
+            const user = await this.db.getUserByToken(token);
+            if (user) {
+                const resultSelectData = await this.db.getDataAboutUser(user.id);
+                if (resultSelectData) {
+                    const result = await this.db.updateTextAboutUser(user.id, aboutText);
+                    if (result) {
+                        return aboutText;
+                    }
+                } else {
+                    const result = await this.db.addTextAboutUser(user.id, aboutText);
+                    if (result) {
+                        return aboutText;
+                    }
+                }
+            }
+        }
+    }
+
+    async getUserAboutText(data) {
+        const { token } = data;
+        if (token) {
+            const user = await this.db.getUserByToken(token);
+            if (user) {
+                const result = await this.db.getDataAboutUser(user.id);
+                if (result) {
+                    return result.aboutText;
+                }
+            }
         }
     }
 }
