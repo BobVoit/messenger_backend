@@ -1,5 +1,6 @@
 const Module = require('../Module');
 const md5 = require('md5');
+const User = require('./User');
 const Answer = require('../../routers/Answer');
 const fs = require('fs');
 
@@ -7,9 +8,28 @@ const fs = require('fs');
 class Users extends Module {
     constructor(options) {
         super(options);
-
         this.answer = new Answer();
+
+        this.users = {};
+
+        this.io.on('connect', (socket) => console.log(`${socket.id} connected`));
+
+        this.io.on('connection', async (socket) => {
+            
+
+            socket.on(this.MESSAGES.SET_CONNECT, async data => this.connect(data.token, socket));
+
+
+            socket.on('disconnecting', async () => this.disconnecting(socket));
+            socket.on('disconnect', () => {
+                console.log(`${socket.id} disconnected!`);
+            });
+        })
     }
+
+    // *****************************************
+    // Вспомогательные методы для устанвления путей к фото
+    // *****************************************
 
     getPathToUploadImage(fileName) {
         return `${this.HOST}/${this.UPLOADS.IMAGES}/${fileName}`;
@@ -18,6 +38,10 @@ class Users extends Module {
     getFullPathToUploadImage(fileName) {
         return `${this.PATH_TO_DIR}/${this.UPLOADS.IMAGES}/${fileName}`;
     }
+
+    // *****************************************
+    // Методы для API запросовы
+    // *****************************************
 
     // авторизация пользователя
     async login(data) {
@@ -34,6 +58,7 @@ class Users extends Module {
                 }
             }
         } 
+        return false;
     }
 
     // регистрация нового пользователя
@@ -51,6 +76,7 @@ class Users extends Module {
                 }
             }
         }
+        return false;
     }
 
     // получить данные о пользователе
@@ -61,10 +87,11 @@ class Users extends Module {
             const user = await this.db.getUserByToken(token);
             if (user) {
                 const avatar = await this.db.getAvatar(user.id);
-                const aboutText = await this.db.getDataAboutUser(user.id);
+                const aboutText = await this.db.getDataAboutUser(user.id);  
                 return { ...user, ...aboutText, avatar: avatar ? this.getPathToUploadImage(avatar.filename) : null };
             }
         }
+        return false;
     }
 
     // выход из акаунтаx
@@ -80,6 +107,7 @@ class Users extends Module {
                 }
             }
         }
+        return false;
     }
 
     // добавить аватар пользователю
@@ -93,6 +121,7 @@ class Users extends Module {
                 return this.getPathToUploadImage(avatar.filename);
             }
         }
+        return false;
     }
 
     // получить пользовательский аватар
@@ -108,6 +137,7 @@ class Users extends Module {
                 }
             }
         }
+        return false;
     }
 
     // обновить аватар пользователя
@@ -129,6 +159,7 @@ class Users extends Module {
                 }
             }
         }
+        return false;
     }
 
     // удалить аватар пользователя
@@ -148,6 +179,7 @@ class Users extends Module {
                 return result ? true : false;
             }
         }
+        return false;
     }
 
     // обновить никнейм
@@ -160,6 +192,7 @@ class Users extends Module {
                 return nickname;
             }
         }
+        return false;
     }
 
     // добавление текста о пользователе
@@ -183,6 +216,7 @@ class Users extends Module {
                 }
             }
         }
+        return false;
     }
 
     async getUserAboutText(data) {
@@ -196,7 +230,44 @@ class Users extends Module {
                 }
             }
         }
+        return false;
     }
+
+
+    // *****************************************
+    // Методы для Socket IO
+    // *****************************************
+
+    // подключения к серверу по ws соединению
+    // userId - индификатор пользователя
+    // socket - параметры соединению по сокету
+    async connect(token, socket) {
+        console.log(token, socket.id);
+        const user = new User(this.db);
+        const userData = await this.db.getUserByToken(token);
+        if (userData) {
+            this.users[userData.id] = { ...userData, socketId: socket.id };
+            await user.setOnlineStatus(userData.id);
+            await user.setSocketId(userData.id, socket.id);
+        }
+        console.log(this.users);
+    }
+
+
+    // отключение ws соединения
+    // socket - параметры соединению по сокету
+    async disconnecting(socket) {
+        const user = new User(this.db);
+        const userData = await this.db.getUserBySocketId(socket.id);
+        if (userData) {
+            delete this.users[userData.id];
+            await user.setOfflineStatus(userData.id);
+            await user.removeSocketId(userData.id);
+        }
+        console.log(this.users);
+    }
+
+
 }
 
 module.exports = Users;

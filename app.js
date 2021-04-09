@@ -19,10 +19,12 @@ const { PORT, MESSAGES, HOST, UPLOADS, PATH_TO_DIR } = SETTINGS;
 
 const DB = require('./application/modules/db/DB');
 const Users = require('./application/modules/users/Users');
+const Chat = require('./application/modules/chat/Chat');
+
 
 const db = new DB();
 const users = new Users({ io, MESSAGES, db, HOST, UPLOADS, PATH_TO_DIR });
-
+const chat = new Chat({ io, MESSAGES, db });
 
 const Router = require('./application/routers/Router');
 const router = new Router({ users });

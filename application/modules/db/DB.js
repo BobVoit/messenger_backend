@@ -140,6 +140,33 @@ class DB {
         );
     }
 
+    // установить socketId ( id подключения )
+    setSocketId(id, socketId) {
+        return this.db.run(
+            'UPDATE users SET socketId = ? WHERE id = ?',
+            [socketId, id]
+        );
+    }
+
+    removeSocketId(id) {
+        return this.db.run(
+            'UPDATE users SET socketId = NULL WHERE id = ?',
+            [id]
+        );
+    }
+
+
+    // получить данные о пользователе по socketId
+    getUserBySocketId(socketId) {
+        if (socketId) {
+            return this.db.get(
+                'SELECT * FROM users WHERE socketId = ?',
+                [socketId]
+            );
+        }   
+        return false;
+    }
+
 }
 
 module.exports = DB;

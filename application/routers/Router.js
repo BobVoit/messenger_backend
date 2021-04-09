@@ -15,30 +15,26 @@ function Router({ users }) {
     
     // регистрация
     router.post('/auth/registration', async (req, res) => {
-        const data = req.body;
-        const value = await users.registration(data);
+        const value = await users.registration(req.body);
         res.send(answer.good(value));
     });
 
     // авторизация
     router.post('/auth/login', async (req, res) => {
-        const data = req.body;
-        const value = await users.login(data);
+        const value = await users.login(req.body);
         res.json(answer.good(value));
     });
 
     // выход
     router.get('/auth/logout/:token', async (req, res) => {
-        const data = req.params;
-        const value = await users.logout(data);
+        const value = await users.logout(req.params);
         res.json(answer.good(value));
     })
 
 
     // получить данные о пользователе по токену
     router.get('/users/getUserData/:token', async (req, res) => {
-        const data = req.params;
-        const value = await users.getUserData(data);
+        const value = await users.getUserData(req.params);
         res.json(answer.good(value));
     });
 
@@ -62,7 +58,6 @@ function Router({ users }) {
 
     // обновить аватар
     router.post('/avatar/updateAvatar', upload, async (req, res) => {
-        console.log({ avatar: req.file, ...req.body });
         const value = await users.updateUserAvatar({ avatar: req.file, ...req.body });
         res.json(answer.good(value));
     }) 

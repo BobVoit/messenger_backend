@@ -13,7 +13,8 @@ const SETTINGS = {
         LOGIN: 'LOGIN',
         REGISTRATION: 'REGISTRATION',
         LOGOUT: 'LOGOUT',
-        GET_USER_DATA: 'GET_USER_DATA'
+        GET_USER_DATA: 'GET_USER_DATA',
+        SET_CONNECT: 'SET_CONNECT', 
     },
 }
 
