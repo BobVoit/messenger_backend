@@ -14,17 +14,19 @@ const io = require('socket.io')(server, {
 });
 
 const SETTINGS = require('./settings');
-const { PORT, MESSAGES, HOST, UPLOADS, PATH_TO_DIR } = SETTINGS;
+const { PORT, MESSAGES, HOST, UPLOADS, PATH_TO_DIR, MEDIATOR } = SETTINGS;
 
 
 const DB = require('./application/modules/db/DB');
-const Users = require('./application/modules/users/Users');
-const Chat = require('./application/modules/chat/Chat');
+const UsersManager = require('./application/modules/users/UsersManager');
+const ChatManager = require('./application/modules/chat/ChatManager');
+const Mediator = require('./application/modules/Mediator');
 
 
 const db = new DB();
-const users = new Users({ io, MESSAGES, db, HOST, UPLOADS, PATH_TO_DIR });
-const chat = new Chat({ io, MESSAGES, db });
+const mediator = new Mediator(MEDIATOR);
+const users = new UsersManager({ io, MESSAGES, db, HOST, UPLOADS, PATH_TO_DIR, mediator });
+const chat = new ChatManager({ io, MESSAGES, db, mediator });
 
 const Router = require('./application/routers/Router');
 const router = new Router({ users });

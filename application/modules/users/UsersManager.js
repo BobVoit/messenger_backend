@@ -5,7 +5,7 @@ const Answer = require('../../routers/Answer');
 const fs = require('fs');
 
 
-class Users extends Module {
+class UsersManager extends Module {
     constructor(options) {
         super(options);
         this.answer = new Answer();
@@ -15,16 +15,16 @@ class Users extends Module {
         this.io.on('connect', (socket) => console.log(`${socket.id} connected`));
 
         this.io.on('connection', async (socket) => {
-            
+
 
             socket.on(this.MESSAGES.SET_CONNECT, async data => this.connect(data.token, socket));
-
 
             socket.on('disconnecting', async () => this.disconnecting(socket));
             socket.on('disconnect', () => {
                 console.log(`${socket.id} disconnected!`);
             });
         })
+        this.mediator.set(this.TRIGGERS.GET_ALL_USERS, () => this.users);
     }
 
     // *****************************************
@@ -40,7 +40,7 @@ class Users extends Module {
     }
 
     // *****************************************
-    // Методы для API запросовы
+    // Методы для API запросов
     // *****************************************
 
     // авторизация пользователя
@@ -52,7 +52,6 @@ class Users extends Module {
                 if (user && passHash === user.password) {
                     const result = await this.db.updateUserToken(user.id, token);
                     if (result) {
-                        this.db.updateUserStatus(user.id, 'online');
                         return token;
                     }
                 }
@@ -239,30 +238,32 @@ class Users extends Module {
     // *****************************************
 
     // подключения к серверу по ws соединению
-    // userId - индификатор пользователя
-    // socket - параметры соединению по сокету
     async connect(token, socket) {
-        console.log(token, socket.id);
         const user = new User(this.db);
         const userData = await this.db.getUserByToken(token);
+        const userAvatar = await this.db.getAvatar(userData.id);
+        const avatar = userAvatar ? userAvatar.filename : null;
+        user.fill({ ...userData, avatar: this.getPathToUploadImage(avatar) });
         if (userData) {
-            this.users[userData.id] = { ...userData, socketId: socket.id };
-            await user.setOnlineStatus(userData.id);
-            await user.setSocketId(userData.id, socket.id);
+            await this.db.updateUserStatus(user.id, 'online');
+            await this.db.setSocketId(user.id, socket.id);
+            socket.emit(this.MESSAGES.GET_ALL_ACTIVE_USERS, this.users);
+            this.users[user.id] = user;
+            socket.broadcast.emit(this.MESSAGES.USER_CONNECT, user);
         }
         console.log(this.users);
     }
 
 
-    // отключение ws соединения
-    // socket - параметры соединению по сокету
+    // отключение от сервера по ws соединения
     async disconnecting(socket) {
         const user = new User(this.db);
         const userData = await this.db.getUserBySocketId(socket.id);
         if (userData) {
+            await this.db.updateUserStatus(user.id, 'offline');
+            await this.db.removeSocketId(userData.id);
+            socket.broadcast.emit(this.MESSAGES.USER_DISCONNECT, this.users[userData.id]);
             delete this.users[userData.id];
-            await user.setOfflineStatus(userData.id);
-            await user.removeSocketId(userData.id);
         }
         console.log(this.users);
     }
@@ -270,4 +271,4 @@ class Users extends Module {
 
 }
 
-module.exports = Users;
+module.exports = UsersManager;

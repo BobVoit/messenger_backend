@@ -15,7 +15,20 @@ const SETTINGS = {
         LOGOUT: 'LOGOUT',
         GET_USER_DATA: 'GET_USER_DATA',
         SET_CONNECT: 'SET_CONNECT', 
+        GET_ALL_ACTIVE_USERS: 'GET_ALL_ACTIVE_USERS',
+        USER_CONNECT: 'USER_CONNECT',
+        USER_DISCONNECT: 'USER_DISCONNECT',
     },
+
+    MEDIATOR: {
+        EVENTS: {
+            USER_CONNECT: 'USER_CONNECT',
+            USER_DISCONNECT: 'USER_DISCONNECT'
+        },
+        TRIGGERS: {
+            GET_ALL_USERS: 'GET_ALL_USERS'
+        }
+    }
 }
 
 module.exports = SETTINGS;

@@ -1,7 +1,7 @@
 const Module = require('../Module');
 
 
-class Chat extends Module {
+class ChatManager extends Module {
     constructor(options) {
         super(options);
 
@@ -14,8 +14,9 @@ class Chat extends Module {
 
             // socket.on('disconnect', () => console.log(`${socket.id} disconnected!`));
         })
+        console.log(this.mediator);
     }
 }
 
 
-module.exports = Chat;
+module.exports = ChatManager;

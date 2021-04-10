@@ -1,8 +1,35 @@
-
+const md5 = require('md5');
 
 class User {
     constructor(db) {
         this.db = db;
+    }
+
+    fill({ id, login, password, nickname, token, avatar }) {
+        this.id = id;
+        this.login = login;
+        this.password = password;
+        this.nickname = nickname;
+        this.token = token;
+        this.avatar = avatar;
+    }
+
+    self() {
+        return {
+            id: this.id,
+            login: this.login, 
+            password: this.password,
+            nickname: this.nickname,
+            token: this.token,
+            avatar: this.avatar,
+        }
+    }
+
+    get() {
+        return {
+            id: this.id,
+            nickname: this.nickname
+        }
     }
 
     // устанавливает статус online для пользователя с token
