@@ -29,7 +29,7 @@ class DB {
 
     // берёт всех пользователей из базы данных
     getAllUsers() {
-        const users = this.db.get('SELECT * FROM users');
+        const users = this.db.all('SELECT * FROM users');
         return users;
     }
 
@@ -175,10 +175,10 @@ class DB {
         );
     }
 
-    saveMessage(text, date, to, from) {
+    saveMessage(text, date, time, to, from) {
         return this.db.run(
-            'INSERT INTO messages (text, date, to, from) VALUES (?, ?, ?, ?)',
-            [text, date, to, from]
+            'INSERT INTO messages (text, date, time, toId, fromId) VALUES (?, ?, ?, ?, ?)',
+            [text, date, time, to, from]
         );
     }
 
@@ -189,6 +189,22 @@ class DB {
         return this.db.all(
             'SELECT * FROM messages WHERE (toId = ? AND fromId = ?) OR (toId = ? AND fromId = ?)',
             [toId, fromId, fromId, toId]
+        );
+    }
+
+    getMessageByTimeAndDate(time, date) {
+        return this.db.get(
+            'SELECT * FROM messages WHERE date = ? AND time = ?',
+            [date, time]
+        );
+    }
+
+
+    // получить первых count пользователей начиная с start
+    getUsersInRange(count, start = 0) {
+        return this.db.all(
+            'SELECT users.id, users.nickname, users.status, avatars.filename AS avatar FROM users LEFT JOIN avatars ON users.id = avatars.userId LIMIT ? OFFSET ?',
+            [count, start]
         );
     }
 }

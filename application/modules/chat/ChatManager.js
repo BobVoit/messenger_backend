@@ -12,7 +12,7 @@ class ChatManager extends Module {
                 socket.broadcast.emit('message', data);
             })
 
-
+            
             socket.on(this.MESSAGES.PRIVATE_MESSAGE, async data => await this.privateMessage(data, socket));
             socket.on(this.MESSAGES.GET_ALL_MESSAGES, async data => await this.getAllMessages(data, socket));
             
@@ -29,9 +29,12 @@ class ChatManager extends Module {
         }
     }
 
-    async privateMessage({ text, date, from, to, socketIdTo }, socket) {
-        if (await this.db.saveMessage(text, date, from, to)) {
-            socket.to(socketIdTo).emit(this.MESSAGES.PRIVATE_MESSAGE);
+    async privateMessage({ text, date, time, from, to, socketIdTo }, socket) {
+        console.log(text, date, time, from, to, socketIdTo);
+        if (await this.db.saveMessage(text, date, time, to, from)) {
+            const message = await this.db.getMessageByTimeAndDate(time, date);
+            socket.to(socketIdTo).emit(this.MESSAGES.PRIVATE_MESSAGE, message);
+            socket.emit(this.MESSAGES.PRIVATE_MESSAGE, message);
         }
     }
 

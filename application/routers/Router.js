@@ -1,8 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const os =require('os');
-const SETTINGS = require('../../settings');
 const uploadAvatar = require('../modules/Multer/multer');
 
 const Answer = require('./Answer');
@@ -13,6 +11,10 @@ function Router({ users }) {
 
     const upload = uploadAvatar;
     
+    // **********************************
+    // для работы с конктретным пользователем
+    // **********************************
+
     // регистрация
     router.post('/auth/registration', async (req, res) => {
         const value = await users.registration(req.body);
@@ -31,6 +33,9 @@ function Router({ users }) {
         res.json(answer.good(value));
     })
 
+    // **********************************
+    // для работы с пользвателями
+    // **********************************
 
     // получить данные о пользователе по токену
     router.get('/users/getUserData/:token', async (req, res) => {
@@ -43,6 +48,40 @@ function Router({ users }) {
         const value = await users.updateUserNickname(req.body);
         res.json(answer.good(value));
     })
+
+    // устанавливает значение для текста о пользователе
+    router.post('/users/updateAboutText', async (req, res) => {
+        const value = await users.setTextAboutUser(req.body);
+        res.json(answer.good(value));
+    })
+
+    // получить текст о пользователе
+    router.get('/users/getAboutText/:token', async (req, res) => {
+        const value = await users.getUserAboutText(req.params);
+        res.json(answer.good(value));
+    })
+
+    // удалить пользователя
+    router.get('/users/deleteUser/:token', async (req, res) => {
+        const value = await users.deleteUser(req.params);
+        res.json(answer.good(value));
+    })
+
+    // получить всех пользователей
+    router.get('/users/allUsers', async (req, res) => {
+        const value = await users.getAllUsers();
+        res.json(answer.good(value));
+    })
+
+    // получить 20 пользователей начиная с некоторого
+    router.get('/users/someUsers', async (req, res) => {
+        const value = await users.getSomeUsers(req.query);
+        res.json(answer.good(value));
+    })
+
+    // **********************************
+    // для работы с аватаром
+    // **********************************
 
     // добавление аватара
     router.post('/avatar/saveAvatar', upload, async (req, res) => {
@@ -68,23 +107,6 @@ function Router({ users }) {
         res.json(answer.good(value));
     })
     
-    // устанавливает значение для текста о пользователе
-    router.post('/users/updateAboutText', async (req, res) => {
-        const value = await users.setTextAboutUser(req.body);
-        res.json(answer.good(value));
-    })
-
-    // получить текст о пользователе
-    router.get('/users/getAboutText/:token', async (req, res) => {
-        const value = await users.getUserAboutText(req.params);
-        res.json(answer.good(value));
-    })
-
-    // удалить пользователя
-    router.get('/users/deleteUser/:token', async (req, res) => {
-        const value = await users.deleteUser(req.params);
-        res.json(answer.good(value));
-    })
 
     router.all('/*', (req, res) => res.send(answer.bad(404)));
     return router;

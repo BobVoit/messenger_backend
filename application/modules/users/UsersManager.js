@@ -259,6 +259,23 @@ class UsersManager extends Module {
         return false;
     }
 
+    // получить всех пользователей
+    async getAllUsers() {
+        const users = await this.db.getAllUsers();
+        if (users) {
+            return users;
+        }
+    }
+
+    // получить первых count пользователей начиная с start
+    async getSomeUsers(data) {
+        const { count, start } = data;
+        const users = await this.db.getUsersInRange(count, start);
+        if (users) {
+            return users.map(user => ({ ...user, avatar: user.avatar ? this.getPathToUploadImage(user.avatar) : null }));
+        }
+    }
+
     // *****************************************
     // Методы для Socket IO
     // *****************************************
