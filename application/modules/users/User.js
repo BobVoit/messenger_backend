@@ -5,13 +5,14 @@ class User {
         this.db = db;
     }
 
-    fill({ id, login, password, nickname, token, avatar }) {
+    fill({ id, login, password, nickname, token, avatar, socketId }) {
         this.id = id;
         this.login = login;
         this.password = password;
         this.nickname = nickname;
         this.token = token;
         this.avatar = avatar;
+        this.socketId = socketId;
     }
 
     self() {
@@ -22,6 +23,7 @@ class User {
             nickname: this.nickname,
             token: this.token,
             avatar: this.avatar,
+            socketId: this.socketId,
         }
     }
 

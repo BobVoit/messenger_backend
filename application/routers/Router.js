@@ -74,12 +74,17 @@ function Router({ users }) {
         res.json(answer.good(value));
     })
 
-    
+    // получить текст о пользователе
     router.get('/users/getAboutText/:token', async (req, res) => {
         const value = await users.getUserAboutText(req.params);
         res.json(answer.good(value));
     })
 
+    // удалить пользователя
+    router.get('/users/deleteUser/:token', async (req, res) => {
+        const value = await users.deleteUser(req.params);
+        res.json(answer.good(value));
+    })
 
     router.all('/*', (req, res) => res.send(answer.bad(404)));
     return router;

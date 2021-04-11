@@ -148,13 +148,13 @@ class DB {
         );
     }
 
+    // удалить socketId из таблицы пользователей c id
     removeSocketId(id) {
         return this.db.run(
             'UPDATE users SET socketId = NULL WHERE id = ?',
             [id]
         );
     }
-
 
     // получить данные о пользователе по socketId
     getUserBySocketId(socketId) {
@@ -167,6 +167,30 @@ class DB {
         return false;
     }
 
+    // удаление пользователя из таблицы
+    deleteUser(id) {
+        return this.db.run(
+            'DELETE FROM users WHERE id = ?',
+            [id]
+        );
+    }
+
+    saveMessage(text, date, to, from) {
+        return this.db.run(
+            'INSERT INTO messages (text, date, to, from) VALUES (?, ?, ?, ?)',
+            [text, date, to, from]
+        );
+    }
+
+    // получить все сообщения отправленные от
+    // пользователя с id from 
+    // пользователю с id to
+    getAllMessages(toId, fromId) {
+        return this.db.all(
+            'SELECT * FROM messages WHERE (toId = ? AND fromId = ?) OR (toId = ? AND fromId = ?)',
+            [toId, fromId, fromId, toId]
+        );
+    }
 }
 
 module.exports = DB;

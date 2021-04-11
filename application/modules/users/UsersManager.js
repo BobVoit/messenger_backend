@@ -31,12 +31,12 @@ class UsersManager extends Module {
     // Вспомогательные методы для устанвления путей к фото
     // *****************************************
 
-    getPathToUploadImage(fileName) {
-        return `${this.HOST}/${this.UPLOADS.IMAGES}/${fileName}`;
+    getPathToUploadImage(filename) {
+        return filename ? `${this.HOST}/${this.UPLOADS.IMAGES}/${filename}` : '';
     }
 
-    getFullPathToUploadImage(fileName) {
-        return `${this.PATH_TO_DIR}/${this.UPLOADS.IMAGES}/${fileName}`;
+    getFullPathToUploadImage(filename) {
+        return filename ? `${this.PATH_TO_DIR}/${this.UPLOADS.IMAGES}/${filename}` : '';
     }
 
     // *****************************************
@@ -218,6 +218,7 @@ class UsersManager extends Module {
         return false;
     }
 
+    // получить текст о пользователе
     async getUserAboutText(data) {
         const { token } = data;
         if (token) {
@@ -232,6 +233,31 @@ class UsersManager extends Module {
         return false;
     }
 
+    // удаление пользователя
+    async deleteUser(data) {
+        const { token } = data;
+        const user = await this.db.getUserByToken(token);
+        if (user) {
+            const result = await this.db.deleteUser(user.id);
+            if (result) {
+                const avatar = await this.db.getAvatar(user.id);
+                if (avatar) {
+                    let resultAvatar;
+                    try {
+                        fs.unlinkSync(this.getFullPathToUploadImage(avatar.filename));
+                        resultAvatar = await this.db.deleteUserAvatar(user.id);
+                    } catch (err) {
+                        console.error(err);
+                    }
+                    if (resultAvatar) { 
+                        return true;
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
+    }
 
     // *****************************************
     // Методы для Socket IO
@@ -243,7 +269,7 @@ class UsersManager extends Module {
         const userData = await this.db.getUserByToken(token);
         const userAvatar = await this.db.getAvatar(userData.id);
         const avatar = userAvatar ? userAvatar.filename : null;
-        user.fill({ ...userData, avatar: this.getPathToUploadImage(avatar) });
+        user.fill({ ...userData, avatar: this.getPathToUploadImage(avatar), socketId: socket.id });
         if (userData) {
             await this.db.updateUserStatus(user.id, 'online');
             await this.db.setSocketId(user.id, socket.id);
@@ -260,7 +286,7 @@ class UsersManager extends Module {
         const user = new User(this.db);
         const userData = await this.db.getUserBySocketId(socket.id);
         if (userData) {
-            await this.db.updateUserStatus(user.id, 'offline');
+            await this.db.updateUserStatus(userData.id, 'offline');
             await this.db.removeSocketId(userData.id);
             socket.broadcast.emit(this.MESSAGES.USER_DISCONNECT, this.users[userData.id]);
             delete this.users[userData.id];
