@@ -207,6 +207,37 @@ class DB {
             [count, start]
         );
     }
+
+    // получить друзей пользователя с userId
+    getAllFriendsByUserId(userId) {
+        return this.db.all(
+            'SELECT users.id, users.nickname, avatars.filename as avatar, status FROM users LEFT JOIN avatars ON users.id = avatars.userId INNER JOIN friends ON users.id = friends.friendId WHERE friends.userId = ?',
+            [userId]
+        );
+    }
+
+    // добавить в таблицу друзей
+    addFriend(firstUserId, secondFriendId) {
+        return this.db.run(
+            'INSERT INTO friends (userId, friendId) VALUES (?, ?), (?, ?)',
+            [firstUserId, secondFriendId, secondFriendId, firstUserId]
+        )
+    }
+
+    // добавить в таблицу запросы в друзья
+    addInRequestFriend(fromId, toId) {
+        return this.db.run(
+            'INSERT INTO friendRequests (fromId, toId) VALUES (?, ?)',
+            [fromId, toId]
+        );
+    }
+
+    getUserProfileById(userId) {
+        return this.db.get(
+            'SELECT users.id as id, users.nickname as nickname, avatars.filename as avatar, users.status as status, usersContent.aboutText as aboutText FROM users LEFT JOIN avatars ON users.id = avatars.userId LEFT JOIN usersContent ON users.id = usersContent.userId WHERE users.id = ?',
+            [userId]
+        );
+    }
 }
 
 module.exports = DB;

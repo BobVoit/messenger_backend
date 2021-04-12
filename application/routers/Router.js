@@ -79,6 +79,17 @@ function Router({ users }) {
         res.json(answer.good(value));
     })
 
+    // получить друзей по токену
+    router.get('/users/getFriends/:token', async (req, res) => {
+        const value = await users.getAllFriends(req.params);
+        res.json(answer.good(value));
+    })
+
+    router.get('/users/getProfile/:userId', async (req, res) => {
+        const value = await users.getUserProfile(req.params);
+        res.json(answer.good(value));
+    })
+
     // **********************************
     // для работы с аватаром
     // **********************************

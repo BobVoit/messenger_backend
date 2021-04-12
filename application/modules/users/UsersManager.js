@@ -19,6 +19,7 @@ class UsersManager extends Module {
 
             socket.on(this.MESSAGES.SET_CONNECT, async data => this.connect(data.token, socket));
 
+
             socket.on('disconnecting', async () => this.disconnecting(socket));
             socket.on('disconnect', () => {
                 console.log(`${socket.id} disconnected!`);
@@ -272,7 +273,38 @@ class UsersManager extends Module {
         const { count, start } = data;
         const users = await this.db.getUsersInRange(count, start);
         if (users) {
-            return users.map(user => ({ ...user, avatar: user.avatar ? this.getPathToUploadImage(user.avatar) : null }));
+            return users.map(user => ({ 
+                ...user, 
+                avatar: user.avatar ? this.getPathToUploadImage(user.avatar) : null
+            }));
+        }
+    }
+
+    async getAllFriends(data) {
+        const { token } = data;
+        const user = await this.db.getUserByToken(token);
+        if (user) {
+            const friends = await this.db.getAllFriendsByUserId(user.id);
+            if (friends) {
+                return friends.map(friend => ({ 
+                    ...friend, 
+                    avatar: friend.avatar ? this.getPathToUploadImage(friend.avatar) : null  
+                }));
+            }
+        }
+        return false;
+    }
+
+    // получить профиль о пользователе по userId
+    async getUserProfile(data) {
+        console.log(data);
+        const { userId } = data;
+        const userProfile = await this.db.getUserProfileById(userId);
+        if (userProfile) {
+            return { 
+                ...userProfile, 
+                avatar: userProfile.avatar ? this.getPathToUploadImage(userProfile.avatar) : null  
+            }
         }
     }
 
