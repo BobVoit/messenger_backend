@@ -22,8 +22,6 @@ class ChatManager extends Module {
     // получить все сообщения между пользователями
     async getAllMessages({ from, to }, socket) {
         const messages = await this.db.getAllMessages(to, from);
-        console.log(messages);
-        console.log('-------------------------------------------------');
         if (messages) {
             socket.emit(this.MESSAGES.GET_ALL_MESSAGES, messages);
         }

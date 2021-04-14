@@ -270,8 +270,8 @@ class UsersManager extends Module {
 
     // получить первых count пользователей начиная с start
     async getSomeUsers(data) {
-        const { count, start } = data;
-        const users = await this.db.getUsersInRange(count, start);
+        const { userId, count, start } = data;
+        const users = await this.db.getUsersInRangeExpectUserId(userId, count, start);
         if (users) {
             return users.map(user => ({ 
                 ...user, 
@@ -306,6 +306,54 @@ class UsersManager extends Module {
                 avatar: userProfile.avatar ? this.getPathToUploadImage(userProfile.avatar) : null  
             }
         }
+    }
+
+    // запрос в друзья
+    async requestInFriends(data) {
+        const { fromId, toId } = data;
+        const result = await this.db.setRequestInFriends(fromId, toId);
+        if (result) {
+            return true;
+        }
+        return false;
+    }
+
+    // удалить запрос в друзья
+    async deleteRequestInFriends(data) {
+        const { id } = data;
+        const rowInRequest = await this.db.selectRequestFriendsById(id);
+        if (rowInRequest) {
+            const result = await this.db.deleteRequestInFriends(id);
+            if (result) {
+                const user = await this.db.selectUser(rowInRequest.fromId);
+                if (user) {
+                    return user;
+                }
+            }
+        }
+        return false;
+    }
+
+    // получить список заявок в друзья
+    async getRequestInFriendsForUser(data) {
+        const { userId } = data;
+        const requestsInFriends = await this.db.getRequestInFriendsForUserById(userId);
+        if (requestsInFriends) {
+            return requestsInFriends;
+        }
+        return false;
+    }
+
+    async addInFriends(data) {
+        const { fromId, toId } = data;
+        const deleteFromFriendsRequests = await this.db.deleteFromFriendsRequests(fromId, toId);
+        if (deleteFromFriendsRequests) {
+            const result = await this.db.addInFriends(fromId, toId);
+            if (result) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // *****************************************

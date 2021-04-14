@@ -79,16 +79,47 @@ function Router({ users }) {
         res.json(answer.good(value));
     })
 
-    // получить друзей по токену
-    router.get('/users/getFriends/:token', async (req, res) => {
-        const value = await users.getAllFriends(req.params);
-        res.json(answer.good(value));
-    })
-
+    // получить профиль по id
     router.get('/users/getProfile/:userId', async (req, res) => {
         const value = await users.getUserProfile(req.params);
         res.json(answer.good(value));
     })
+
+
+    // **********************************
+    // для работы с друзьями
+    // **********************************
+
+    // получить друзей по токену
+    router.get('/friends/getFriends/:token', async (req, res) => {
+        const value = await users.getAllFriends(req.params);
+        res.json(answer.good(value));
+    })
+
+    // отправить запрос в друзья
+    router.get('/friends/requestInFriends', async (req, res) => {
+        const value = await users.requestInFriends(req.query);
+        res.json(answer.good(value));
+    })
+
+    // отправить запрос в друзья
+    router.get('/friends/deleteRequestInFriends/:id', async (req, res) => {
+        const value = await users.deleteRequestInFriends(req.params);
+        res.json(answer.good(value));
+    })
+
+    // получить список заявок в друзья
+    router.get('/friends/reqestsInFriends/:userId', async (req, res) => {
+        const value = await users.getRequestInFriendsForUser(req.params);
+        res.json(answer.good(value));
+    })
+
+    // получить список заявок в друзья
+    router.get('/friends/addInFriends', async (req, res) => {
+        const value = await users.addInFriends(req.query);
+        res.json(answer.good(value));
+    })
+
 
     // **********************************
     // для работы с аватаром
@@ -117,7 +148,6 @@ function Router({ users }) {
         const value = await users.deleteUserAvatar(req.params);
         res.json(answer.good(value));
     })
-    
 
     router.all('/*', (req, res) => res.send(answer.bad(404)));
     return router;

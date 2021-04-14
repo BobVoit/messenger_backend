@@ -175,6 +175,7 @@ class DB {
         );
     }
 
+    // сохранить сообщеине
     saveMessage(text, date, time, to, from) {
         return this.db.run(
             'INSERT INTO messages (text, date, time, toId, fromId) VALUES (?, ?, ?, ?, ?)',
@@ -192,6 +193,7 @@ class DB {
         );
     }
 
+    // получить сообщеине по времени и дате
     getMessageByTimeAndDate(time, date) {
         return this.db.get(
             'SELECT * FROM messages WHERE date = ? AND time = ?',
@@ -199,12 +201,19 @@ class DB {
         );
     }
 
-
     // получить первых count пользователей начиная с start
     getUsersInRange(count, start = 0) {
         return this.db.all(
             'SELECT users.id, users.nickname, users.status, avatars.filename AS avatar FROM users LEFT JOIN avatars ON users.id = avatars.userId LIMIT ? OFFSET ?',
             [count, start]
+        );
+    }
+
+    // получить первых count пользователей начиная с start за исключением пользователя с userId
+    getUsersInRangeExpectUserId(userId, count, start = 0) {
+        return this.db.all(
+            'SELECT users.id, users.nickname, users.nickname, avatars.filename as avatar FROM users LEFT JOIN avatars ON users.id = avatars.userId WHERE users.id <> ? LIMIT ? OFFSET ?',
+            [userId, count, start]
         );
     }
 
@@ -232,12 +241,73 @@ class DB {
         );
     }
 
+    // получить профиль пользователя по userId
     getUserProfileById(userId) {
         return this.db.get(
             'SELECT users.id as id, users.nickname as nickname, avatars.filename as avatar, users.status as status, usersContent.aboutText as aboutText FROM users LEFT JOIN avatars ON users.id = avatars.userId LEFT JOIN usersContent ON users.id = usersContent.userId WHERE users.id = ?',
             [userId]
         );
     }
+
+    // установить запрос в друзья
+    setRequestInFriends(fromId, toId) {
+        return this.db.run(
+            'INSERT INTO requestInFriend (fromId, toId) VALUES (?, ?)',
+            [fromId, toId]
+        );
+    }
+
+    // удалить запрос в друзья
+    deleteRequestInFriends(id) {
+        return this.db.run(
+            'DELETE FROM requestInFriend WHERE id = ?',
+            [id]
+        );
+    }
+
+    // взять пользователя по toId
+    // использовать для списка пользователей или друзей
+    selectUser(userId) {
+        return this.db.get(
+            'SELECT users.id, users.nickname, users.status, avatars.filename as avatar FROM users LEFT JOIN avatars ON users.id = avatars.userId WHERE users.id = ?',
+            [userId]
+        );
+    }
+
+    
+    selectRequestFriendsById(id) {
+        return this.db.get(
+            'SELECT * FROM requestInFriend WHERE id = ?',
+            [id]
+        )
+    }
+
+    // получить список заявок в друзья
+    getRequestInFriendsForUserById(userId) {
+        return this.db.all(
+            'SELECT users.id, users.nickname, users.status FROM users INNER JOIN requestInFriend ON users.id = requestInFriend.fromId WHERE requestInFriend.toId = ?',
+            [userId]
+        );
+    }
+
+    // удаляет запрос в друзья
+    // fromId - id от кого был отправлен запрос в друзья
+    // toId - id кому был отправлен запрос в друзья
+    deleteFromFriendsRequests(fromId, toId) {
+        return this.db.run(
+            'DELETE FROM requestInFriend WHERE fromId = ? AND toId = ?',
+            [fromId, toId]
+        );
+    }
+
+    // добавляет в друзья пользователей
+    addInFriends(firstUserId, secondUserId) {
+        return this.db.run(
+            'INSERT INTO friends (userId, friendId) VALUES (?, ?), (?, ?)',
+            [firstUserId, secondUserId, secondUserId, firstUserId]
+        );
+    }
+
 }
 
 module.exports = DB;
