@@ -347,6 +347,7 @@ class UsersManager extends Module {
     async addInFriends(data) {
         const { fromId, toId } = data;
         const deleteFromFriendsRequests = await this.db.deleteFromFriendsRequests(fromId, toId);
+        console.log(data);
         if (deleteFromFriendsRequests) {
             const result = await this.db.addInFriends(fromId, toId);
             if (result) {

@@ -212,7 +212,7 @@ class DB {
     // получить первых count пользователей начиная с start за исключением пользователя с userId
     getUsersInRangeExpectUserId(userId, count, start = 0) {
         return this.db.all(
-            'SELECT users.id, users.nickname, users.nickname, avatars.filename as avatar FROM users LEFT JOIN avatars ON users.id = avatars.userId WHERE users.id <> ? LIMIT ? OFFSET ?',
+            'SELECT users.id, users.nickname, users.nickname, users.status, avatars.filename as avatar FROM users LEFT JOIN avatars ON users.id = avatars.userId WHERE users.id <> ? LIMIT ? OFFSET ?',
             [userId, count, start]
         );
     }
