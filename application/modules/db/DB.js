@@ -308,6 +308,61 @@ class DB {
         );
     }
 
+
+    // **********************************
+    // для работы с комнатами
+    // **********************************
+
+    // создать комнату
+    createRoom(title) {
+        return this.db.run(
+            'INSERT INTO rooms (title) VALUES (?)',
+            [title]
+        );
+    }
+
+    // добавить юзера в комнату
+    addUserInRoom(roomId, userId) {
+        return this.db.run(
+            'INSERT INTO usersAndRooms (roomId, userId) VALUES (?, ?)',
+            [roomId, userId]
+        );
+    }
+
+    // добавить сообщеиние в комнату
+    addNewMessageForRoom({ text, date, time, fromId, roomId }) {
+        return this.db.run(
+            'INSERT INTO roomsMessages (text, date, time, fromId, roomId) VALUES (?, ?, ?, ?, ?)',
+            [text, date, time, fromId, roomId]
+        );
+    }   
+
+    // получить все комнаты
+    getAllRooms() {
+        return this.db.all('SELECT * FROM rooms');
+    }
+
+    // Взять юзеров из одной комнаты
+    getUsersFromOneRoom(roomId) {
+        return this.db.all(
+            'SELECT * FROM users INNER JOIN usersAndRooms ON users.id = usersAndRooms.userId WHERE usersAndRooms.roomId = ?',
+            [roomId]
+        );
+    }
+
+    // Взять комнаты, в которых состоит юзер
+    getRoomsWhereAreUser(userId) {
+        return this.db.all(
+            'SELECT * FROM rooms INNER JOIN usersAndRooms ON rooms.id = usersAndRooms.roomId WHERE usersAndRooms.userId = ?',
+            [userId]
+        );
+    }
+
+    // удалить комнату
+    deleteRoom(roomId) {
+        return this.db.run('DELETE FROM rooms WHERE id = ?', [roomId]);
+    }
+
 }
 
 module.exports = DB;

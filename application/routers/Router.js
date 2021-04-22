@@ -64,7 +64,7 @@ function Router({ users }) {
     // удалить пользователя
     router.get('/users/deleteUser/:token', async (req, res) => {
         const value = await users.deleteUser(req.params);
-        res.json(answer.good(value));
+            
     })
 
     // получить всех пользователей
@@ -148,6 +148,21 @@ function Router({ users }) {
         const value = await users.deleteUserAvatar(req.params);
         res.json(answer.good(value));
     })
+
+
+
+    
+    // **********************************
+    // для работы с комнатами
+    // **********************************
+
+
+
+
+
+
+
+    
 
     router.all('/*', (req, res) => res.send(answer.bad(404)));
     return router;
