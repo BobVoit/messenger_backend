@@ -344,6 +344,7 @@ class UsersManager extends Module {
         return false;
     }
 
+    // добавить в друзья
     async addInFriends(data) {
         const { fromId, toId } = data;
         const deleteFromFriendsRequests = await this.db.deleteFromFriendsRequests(fromId, toId);

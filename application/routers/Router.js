@@ -6,7 +6,7 @@ const uploadAvatar = require('../modules/Multer/multer');
 const Answer = require('./Answer');
 
 
-function Router({ users }) {
+function Router({ users, rooms }) {
     const answer = new Answer;
 
     const upload = uploadAvatar;
@@ -156,7 +156,10 @@ function Router({ users }) {
     // для работы с комнатами
     // **********************************
 
-
+    router.get('/rooms/getAllRooms', async (req, res) => {
+        const value = await rooms.getAllRooms();
+        res.json(answer.good(value));
+    })
 
 
 

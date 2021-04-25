@@ -22,13 +22,15 @@ const SETTINGS = {
         CREATE_ROOM: 'CREATE_ROOM',
         JOIN_IN_ROOM: 'JOIN_IN_ROOM',
         LEAVE_ROOM: 'LEAVE_ROOM',
-        GET_ROOMS: 'GET__ROOMS',
+        GET_ROOMS: 'GET_ROOMS',
+        NEW_ROOM: 'NEW_ROOM',
     },
 
     MEDIATOR: {
         EVENTS: {
             USER_CONNECT: 'USER_CONNECT',
-            USER_DISCONNECT: 'USER_DISCONNECT'
+            USER_DISCONNECT: 'USER_DISCONNECT',
+            USER_JOIN_IN_ROOM: 'USER_JOIN_IN_ROOM'
         },
         TRIGGERS: {
             GET_ALL_USERS: 'GET_ALL_USERS'

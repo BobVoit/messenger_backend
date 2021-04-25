@@ -1,14 +1,15 @@
 const Module = require('../Module');
 
-class Rooms extends Module {
+class RoomsManager extends Module {
     constructor(options) {
         super(options);
         this.rooms = {};
         this.io.on('connection', socket => {
-             
+            socket.on(this.MESSAGES.CREATE_ROOM, async (data) => this.createRoom(data, socket));
+            socket.on(this.MESSAGES.GET_ROOMS, () => this.getAllRooms(socket));
         })
 
-        this.io.of('/').adpter.on('create-room', room => {
+        this.io.of('/').adapter.on('create-room', room => {
             console.log(`${room} was created`);
         })
 
@@ -28,22 +29,32 @@ class Rooms extends Module {
         });
     }
 
-    createRoom(room, socket) {
+
+    getAllRooms(socket) {
+        socket.emit(this.MESSAGES.GET_ROOMS, Object.values(this.rooms));
+    }
+
+    // room - название комнаты
+    async createRoom(room, socket) {
         let data = { result: false };
         if (!(room in this.rooms)) {
-            this.rooms[room] = room;
-            socket.join(room);
-            data = {result: true, room};
+            await this.db.createRoom(room);
+            const dbRoom = await this.db.getRoomByTitle(room);
+            if (dbRoom) {
+                this.rooms[dbRoom.title] = dbRoom;
+                socket.join(room);
+                data = { result: true, room: dbRoom };
+            }
         }
         socket.emit(this.MESSAGES.CREATE_ROOM, data);
+        console.log("Комнаты: ", this.rooms);
     }
 
     joinRoom(room, socket) {
         let data = { result: false };
         if(room in this.rooms) {
             socket.join(room);
-            data = {result: true, room};
-            this.mediator.call();
+            data = {result: true, room};            
         }
         socket.emit(this.MESSAGES.JOIN_ROOM, data);
     }
@@ -60,7 +71,11 @@ class Rooms extends Module {
     getRooms(socket) {
         socket.emit(this.MESSAGES.GET_ROOMS, this.rooms);
     }
+
+    async end() {
+        await this.db.deleteAllRooms();
+    }
 }
 
 
-module.exports = Rooms;
+module.exports = RoomsManager;

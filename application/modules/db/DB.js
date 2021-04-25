@@ -11,8 +11,6 @@ class DB {
                 driver: sqlite3.Database
             })
         })();
-
-        // this.db = new sqlite3.Database('./application/modules/db/messanger.db'); 
     }
 
     // берёт данный пользователя по login
@@ -339,6 +337,7 @@ class DB {
 
     // получить все комнаты
     getAllRooms() {
+        console.log(this.db);
         return this.db.all('SELECT * FROM rooms');
     }
 
@@ -361,6 +360,15 @@ class DB {
     // удалить комнату
     deleteRoom(roomId) {
         return this.db.run('DELETE FROM rooms WHERE id = ?', [roomId]);
+    }
+
+    getRoomByTitle(title) {
+        return this.db.get('SELECT * FROM rooms WHERE title = ?', [title]);
+    }
+
+    // удалить все комнаты
+    deleteAllRooms() {
+        return this.db.run('DELETE FROM rooms');
     }
 
 }
