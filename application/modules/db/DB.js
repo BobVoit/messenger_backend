@@ -362,8 +362,30 @@ class DB {
         return this.db.run('DELETE FROM rooms WHERE id = ?', [roomId]);
     }
 
+    // получить комнату по названию
     getRoomByTitle(title) {
         return this.db.get('SELECT * FROM rooms WHERE title = ?', [title]);
+    }
+
+    // получить сообщения из комнаты
+    getMessageFromRoom(roomId) {
+        return this.db.all(
+            'SELECT * FROM roomsMessages WHERE roomId = ?',
+            [roomId]
+        );
+    }
+
+    // получит сообщение по времени и дате
+    getMessageFromRoomByDateAndTime(date, time) {
+        return this.db.get(
+            'SELECT * FROM roomsMessages WHERE date = ? AND time = ?',
+            [date, time]
+        );
+    }
+
+    // удалить пользователя из комнаты
+    deleteUserFromRoom(userId) {
+        return this.db.run('DELETE FROM usersAndRooms WHERE userId = ?', [userId]);
     }
 
     // удалить все комнаты
