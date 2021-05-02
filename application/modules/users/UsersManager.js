@@ -9,17 +9,11 @@ class UsersManager extends Module {
     constructor(options) {
         super(options);
         this.answer = new Answer();
-
-        this.users = {};
+        this.users = {}; // пользователи онлайн
 
         this.io.on('connect', (socket) => console.log(`${socket.id} connected`));
-
         this.io.on('connection', async (socket) => {
-
-
             socket.on(this.MESSAGES.SET_CONNECT, async data => this.connect(data.token, socket));
-
-
             socket.on('disconnecting', async () => this.disconnecting(socket));
             socket.on('disconnect', () => {
                 console.log(`${socket.id} disconnected!`);
@@ -198,7 +192,6 @@ class UsersManager extends Module {
     // добавление текста о пользователе
     async setTextAboutUser(data) {
         const { aboutText, token } = data;
-        // console.log(typeof aboutText);
         if (token && (data || data === "")) {
             const user = await this.db.getUserByToken(token);
             if (user) {
@@ -266,6 +259,7 @@ class UsersManager extends Module {
         if (users) {
             return users;
         }
+        return false;
     }
 
     // получить первых count пользователей начиная с start
@@ -278,6 +272,7 @@ class UsersManager extends Module {
                 avatar: user.avatar ? this.getPathToUploadImage(user.avatar) : null
             }));
         }
+        return false;
     }
 
     async getAllFriends(data) {
@@ -306,6 +301,7 @@ class UsersManager extends Module {
                 avatar: userProfile.avatar ? this.getPathToUploadImage(userProfile.avatar) : null  
             }
         }
+        return false;
     }
 
     // запрос в друзья
@@ -365,13 +361,13 @@ class UsersManager extends Module {
     // подключения к серверу по ws соединению
     async connect(token, socket) {
         const user = new User(this.db);
-        const userData = await this.db.getUserByToken(token);
-        const userAvatar = await this.db.getAvatar(userData.id);
-        const avatar = userAvatar ? userAvatar.filename : null;
-        user.fill({ ...userData, avatar: this.getPathToUploadImage(avatar), socketId: socket.id });
+        const userData = await this.db.getUserByToken(token); // получить данные о пользователе по токену
+        const userAvatar = await this.db.getAvatar(userData.id); // берем аватар пользователя по id
+        const avatar = userAvatar ? userAvatar.filename : null; // определяем есть ли аватар или нет
+        user.fill({ ...userData, avatar: this.getPathToUploadImage(avatar), socketId: socket.id }); // заполняем информацию о пользователе
         if (userData) {
-            await this.db.updateUserStatus(user.id, 'online');
-            await this.db.setSocketId(user.id, socket.id);
+            await this.db.updateUserStatus(user.id, 'online'); // делаем статус "online"
+            await this.db.setSocketId(user.id, socket.id); // уставливаем socket.IO соединения для между клиентом и сервером
             socket.emit(this.MESSAGES.GET_ALL_ACTIVE_USERS, this.users);
             this.users[user.id] = user;
             socket.broadcast.emit(this.MESSAGES.USER_CONNECT, user);
