@@ -360,11 +360,10 @@ class UsersManager extends Module {
 
     // подключения к серверу по ws соединению
     async connect(token, socket) {
-        const user = new User(this.db);
         const userData = await this.db.getUserByToken(token); // получить данные о пользователе по токену
         const userAvatar = await this.db.getAvatar(userData.id); // берем аватар пользователя по id
         const avatar = userAvatar ? userAvatar.filename : null; // определяем есть ли аватар или нет
-        user.fill({ ...userData, avatar: this.getPathToUploadImage(avatar), socketId: socket.id }); // заполняем информацию о пользователе
+        const user = new User({ ...userData, avatar: this.getPathToUploadImage(avatar), socketId: socket.id }); // заполняем информацию о пользователе
         if (userData) {
             await this.db.updateUserStatus(user.id, 'online'); // делаем статус "online"
             await this.db.setSocketId(user.id, socket.id); // уставливаем socket.IO соединения для между клиентом и сервером
